@@ -93,26 +93,30 @@ tempo_inicial = pygame.time.get_ticks() # pega o tempo desde que o pygame foi in
 
 # Redimensionar a nave inimiga
 #Reduz o tamanho da nave inimiga quando atingida, ajusta as imagens da nave, e aumenta sua velocidade à medida que o tamanho diminui
-def redimensionar_nave():
-    global imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga
-    largura = int(nave_inimiga.width * reduzir_hitbox) #redimensiona a width e reduz o hitbox da nave
-    altura = int(nave_inimiga.height * reduzir_hitbox) #redimensiona a height e reduz o hitbox da nave
-    
+def redimensionar_nave(imagem_nave_inimiga_esquerda_original, imagem_nave_inimiga_direita_original, nave_inimiga, reduzir_hitbox, escala_hitbox, velocidade_nave_inimiga):
+    # Calcular novas dimensões da imagem
+    largura = int(nave_inimiga.width * reduzir_hitbox)
+    altura = int(nave_inimiga.height * reduzir_hitbox)
+
     # Redimensionar as imagens da nave inimiga
     imagem_nave_inimiga_esquerda = pygame.transform.scale(imagem_nave_inimiga_esquerda_original, (largura, altura))
-    imagem_nave_inimiga_direita = pygame.transform.scale(imagem_nave_inimiga_direita_original, (largura, altura))   
-    
-    # Redimensionar a hitbox para ser 80% do tamanho da imagem
+    imagem_nave_inimiga_direita = pygame.transform.scale(imagem_nave_inimiga_direita_original, (largura, altura))
+
+    # Redimensionar a hitbox para ser uma porcentagem do tamanho da imagem
     hitbox_largura = int(largura * escala_hitbox)
     hitbox_altura = int(altura * escala_hitbox)
+
+    # Atualizar as dimensões e posição da hitbox da nave inimiga
     nave_inimiga.width = hitbox_largura
     nave_inimiga.height = hitbox_altura
     nave_inimiga.topleft = (nave_inimiga.left + (largura - hitbox_largura) // 2, nave_inimiga.top + (altura - hitbox_altura) // 2)
 
-    # Aumentar a velocidade conforme o tamanho da nave diminui
+    # Ajustar a velocidade conforme o tamanho da nave
     fator_aumento = (1000 - nave_inimiga.width) / 1000
     velocidade_nave_inimiga = 500 + fator_aumento * 1000
 
+    # Retornar os valores modificados
+    return imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga
 # Reiniciar o jogo
 #Reinicia todas as variáveis do jogo (como nave inimiga, projéteis, e estado de vitória/derrota) para começar uma nova partida
 def reiniciar_jogo():
@@ -123,15 +127,28 @@ def reiniciar_jogo():
     nave_inimiga.height = 600
     nave_inimiga.topleft = (tela_width // 2 - 500, -100)
     velocidade_nave_inimiga = 500
+    
     direcao_nave_inimiga = 1
     projeteis = []
     atingida = False
     tempo_atingida = 0
     tempo_inicial = pygame.time.get_ticks()
-    redimensionar_nave()
+    imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga = redimensionar_nave(
+                    imagem_nave_inimiga_esquerda_original,
+                    imagem_nave_inimiga_direita_original,
+                    nave_inimiga,
+                    reduzir_hitbox,
+                    escala_hitbox,
+                    velocidade_nave_inimiga)
 
 # Iniciar as imagens redimensionadas
-redimensionar_nave()
+imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga = redimensionar_nave(
+    imagem_nave_inimiga_esquerda_original,
+    imagem_nave_inimiga_direita_original,
+    nave_inimiga,
+    reduzir_hitbox,
+    escala_hitbox,
+    velocidade_nave_inimiga)
 
 # GAME LOOP
 run = True
@@ -237,7 +254,14 @@ while run:
                 tempo_atingida = pygame.time.get_ticks() #get_ticks pega o tempo de inicio do jogo, pra conometrar eventos relacionados ao impacto
                 projeteis.remove(projetil) #Apaga o laser após o impacto, pra impedir que acerte a rect da nave novamente
                 if nave_inimiga.width > tamanho_minimo: #verifica se a nave inimiga ainda é maior que a variável tamanho_minimo
-                    redimensionar_nave() #caso seja maior, chama a função pra diminuir o tamanho da nave
+                    imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga = redimensionar_nave(
+                    imagem_nave_inimiga_esquerda_original,
+                    imagem_nave_inimiga_direita_original,
+                    nave_inimiga,
+                    reduzir_hitbox,
+                    escala_hitbox,
+                    velocidade_nave_inimiga
+) #caso seja maior, chama a função pra diminuir o tamanho da nave
                 else:
                     vitoria = True #se a nave inimiga for menor ou igual ao tamanho minimo, o jogo encerra com vitória
 
