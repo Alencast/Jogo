@@ -56,7 +56,7 @@ projeteis = []
 # VARIÁVEIS DA HITBOX
 #Controla se a nave inimiga foi atingida e por quanto tempo (milissegundos) ela ficará "atingida" antes de retornar ao normal
 atingida = False
-tempo_atingida = 0
+
 duracao_atingida = 1000 # em ms
 
 
@@ -94,7 +94,7 @@ tempo_inicial = pygame.time.get_ticks() # pega o tempo desde que o pygame foi in
 # Redimensionar a nave inimiga
 #Reduz o tamanho da nave inimiga quando atingida, ajusta as imagens da nave, e aumenta sua velocidade à medida que o tamanho diminui
 def redimensionar_nave():
-    global imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga
+    global imagem_nave_inimiga_esquerda, imagem_nave_inimiga_direita, nave_inimiga, velocidade_nave_inimiga #utilizar variáveis globais pq são constantes
     largura = int(nave_inimiga.width * reduzir_hitbox) #redimensiona a width e reduz o hitbox da nave
     altura = int(nave_inimiga.height * reduzir_hitbox) #redimensiona a height e reduz o hitbox da nave
     
@@ -116,7 +116,7 @@ def redimensionar_nave():
 # Reiniciar o jogo
 #Reinicia todas as variáveis do jogo (como nave inimiga, projéteis, e estado de vitória/derrota) para começar uma nova partida
 def reiniciar_jogo():
-    global vitoria, derrota, nave_inimiga, velocidade_nave_inimiga, direcao_nave_inimiga, projeteis, atingida, tempo_atingida, tempo_inicial
+    global vitoria, derrota, nave_inimiga, velocidade_nave_inimiga, direcao_nave_inimiga, projeteis, atingida, tempo_atingida, tempo_inicial #utilizar variáveis globais pq são constantes
     vitoria = False
     derrota = False
     nave_inimiga.width = 1000
@@ -126,7 +126,7 @@ def reiniciar_jogo():
     direcao_nave_inimiga = 1
     projeteis = []
     atingida = False
-    tempo_atingida = 0
+   
     tempo_inicial = pygame.time.get_ticks()
     redimensionar_nave()
 
@@ -206,35 +206,29 @@ while run:
         if nave_inimiga.right >= tela_width or nave_inimiga.left <= 0: #verifica se a nave chegou no limite da tela, esquerda ou direita
             direcao_nave_inimiga *= -1 #caso tenha chegado, multiplica o valor da direção por -1, pra inverter a direção do movimento
 
-        # Desenhar nave inimiga
         
-        #atingida: Booleano que indica se a nave inimiga foi atingida
-        #pygame.time.get_ticks(): Retorna o tempo atual em milissegundos desde o início do jogo
-        #tempo_atingida: Armazena o tempo em que a nave inimiga foi atingida (pra alterar a imagem momentaneamente)
-        #duracao_atingida: Duração durante a qual a nave inimiga deve ser desenhada com a imagem de "atingida"
-       
-        #Determinar a imagem da nave inimiga com base na direção
+     
         if direcao_nave_inimiga == -1: #se estiver indo para a esquerda, renderiza a imagem virada para a esquerda
             imagem_nave_atual = imagem_nave_inimiga_esquerda
         else: #se estiver indo para a direita, renderiza a imagem virada para a direta
             imagem_nave_atual = imagem_nave_inimiga_direita
 
         # Desenhar a nave inimiga na tela
-        tela.blit(imagem_nave_atual, nave_inimiga)
+        tela.blit(imagem_nave_atual, nave_inimiga) #desenha a imagem_nave_atual no rect da nave_inimiga
 
         # Resetar o estado de atingida
         atingida = False
 
         # Desenhar projéteis
-        for projetil in projeteis:
-            projetil.y += projetil_velocidade * controle_fps
-            tela.blit(imagem_laser, projetil) # blit serve para desenhar uma superfície (imagem, texto, etc.)
+        for projetil in projeteis: #percorre a lista projeteis, necessária para gerenciar o comportamento de cada laser
+            projetil.y += projetil_velocidade * controle_fps # o laser no eixo y recebe a velocidade do projetil_velocidade
+            tela.blit(imagem_laser, projetil) # desenha a imagem_laser em projetil
 
-        # Verificar se projéteis atingiram a nave inimiga
+        # Verificar se o laser atingiu a nave inimiga
         for projetil in projeteis: #percorre a lista projeteis, necessária para gerenciar o comportamento de cada laser
             if nave_inimiga.colliderect(projetil): #verifica se o retângulo da hitbox da nave inimiga colide com o retângulo do projetil
             #O método colliderect() é fornecido pelo Rect do Pygame e retorna True se houver interseção entre dois retangulos
-                tempo_atingida = pygame.time.get_ticks() #get_ticks pega o tempo de inicio do jogo, pra conometrar eventos relacionados ao impacto
+              
                 projeteis.remove(projetil) #Apaga o laser após o impacto, pra impedir que acerte a rect da nave novamente
                 if nave_inimiga.width > tamanho_minimo: #verifica se a nave inimiga ainda é maior que a variável tamanho_minimo
                     redimensionar_nave() #caso seja maior, chama a função pra diminuir o tamanho da nave
@@ -249,19 +243,24 @@ while run:
             #jogador.top - 20: Define a posição vertical (Y) do laser acima da nave (jogador.top - 20)
             #40, 40: Define a largura e a altura do laser. Aqui, o laser tem um tamanho quadrado de 40 por40
             #projeteis.append(...): O novo laser é adicionado à lista projeteis, que mantém o controle de todos os projéteis ativos no jogo.
-            projeteis.append(pygame.Rect(jogador.centerx - 20, jogador.top - 20, 40, 40))
+            projeteis.append(pygame.Rect(jogador.centerx - 20, jogador.top - 20, 40, 40)) #posição onde o laser vai aparecer (posição, direção,width, height)
             ultimo_tiro = pygame.time.get_ticks() # atualiza o valor do último tiro, pra garantir que apenas um projeto por segundo seja disparado
 
     # contador
     fonte_tempo = pygame.font.Font(None, 50) # none = fonte padrão
     minutos = tempo_restante // 60000 # tempo_restante // 60000 divide o tempo restante em milissegundos por 60k para pegar o número de minutos
     segundos = (tempo_restante % 60000) // 1000 #pega o resto da divisão por 60.000 ( o tempo abaixo de um minuto) e divide por 1000 para converter em segundos
+    
+    #condicionais para alterar o contador no fim de jogo
     if segundos >= 20:
         tempo_texto = fonte_tempo.render("Fim do mundo em {}:{:02d}".format(minutos, segundos), True, (255, 255, 255))  # anti-alising true
         tela.blit(tempo_texto, (50, 50))#tempo e posição (x,y)
-    else:
+    elif segundos < 20:
         tempo_texto = fonte_tempo.render("Fim do mundo em {}:{:02d}".format(minutos, segundos), True, (255, 0, 0))  # tornar o timer vermelho quando o tempo for menor que 20
-        tela.blit(tempo_texto, (50, 50)) #tempo e posição (x,y)       
+        tela.blit(tempo_texto, (50, 50)) #tempo e posição (x,y)   
+    elif segundos == 0 or vitoria:
+        tempo_texto = ""
+        tela.blit(tempo_texto)          
 
     # Atualizar a tela
     pygame.display.flip()
