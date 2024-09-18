@@ -9,6 +9,8 @@ pygame.mixer.music.play(-1)  # -1 para tocar em looping
 # PEGAR A RESOLUÇÃO MÁXIMA DO MONITOR DE FORMA DINÂMICA
 info = pygame.display.Info() #Pega a resolução máxima do monitor do jogador
 
+pygame.mouse.set_visible(False)
+
 #Armazena a largura e a altura da tela na variável tela_width e tela_height
 tela_width = info.current_w
 tela_height = info.current_h
